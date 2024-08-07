@@ -154,7 +154,7 @@ class Extractor:
 
         Returns
         -------
-        spectra: list[tuple[str, ...]]
+        spectra : list[tuple[str, ...]]
         """
         # needs a check if this is available in the first place. It may not exist
         spectra = []
@@ -198,7 +198,7 @@ class Extractor:
         flat_dict : dict[str, any]
             a flattened dict
         """
-        kv_list = []
+        kv_list: list[tuple[str, any]] = []
         self._flatten_dict_helper(kv_map, kv_list, "")
         flat_dict = dict(kv_list)
         return flat_dict
@@ -209,6 +209,23 @@ class Extractor:
             kv_list: list[tuple[str, any]],
             parent_key: str = "" 
             ):
+        """ Recursively traverses through a nested dictionary (where values are
+        themselves dictionaries) and converts key-value pairs into list where
+        nested keys are separated by '.' and their associated values are stored
+        as a tuple.
+
+        Parameters
+        ----------
+        kv_map : dict[str, any]
+            a nested dictionary
+
+        kv_list : list[tuple[str, any]]
+            an empty list that will be populated as a side effect during the
+            flattening process
+        
+        parent_key : str
+            a string or ancestor keys separated by '.'
+        """
         for k, v in kv_map.items():
             if len(parent_key) != 0:
                 key_str = parent_key + '.' + str(k)
@@ -220,6 +237,8 @@ class Extractor:
                 self._flatten_dict_helper(kv_map[k], kv_list, parent_key=key_str)
 
     def _parse_suffix(self, key_str: str) -> str:
+        """Returns a the last key-name of a series of keys separated by '.'
+        """
         r_index = key_str.rfind('.')
         return key_str[r_index+1:]
 
