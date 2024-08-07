@@ -180,7 +180,7 @@ class Extractor:
         """Extract metadata from JSON response."""
         metadata = []
         for k, v in self._json_res.items():
-            if k.find("metadata") != -1:
+            if k.find("metadata") != -1 and not isinstance(v, list):
                 k_entry = self._parse_suffix(k)
                 metadata.append((k_entry, v))
         return metadata 
