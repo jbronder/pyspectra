@@ -4,8 +4,6 @@
 # -----------------------------------------------------------------------------
 # A command line program to serve as a URL function call to obtain the design
 # spectra from the USGS web service.
-# TODO
-# [] Develop a write to stdout option in the argparser
 #------------------------------------------------------------------------------
 
 import argparse
@@ -28,27 +26,38 @@ parser = argparse.ArgumentParser(
         )
 
 parser.add_argument(
-    'std', metavar='std', help='Design Standard', choices=[
-                        'asce7-22', 'asce7-16', 'asce7-10', 'asce7-05',
-                        'nehrp-2020', 'nehrp-2015', 'nehrp-2009',
-                        'ibc-2015', 'ibc-2012',
-                        'aashto-2009',
-                        ]
+    'std', 
+    metavar='std', 
+    help='Design Standard', 
+    choices=['asce7-22', 'asce7-16', 'asce7-10', 'asce7-05',
+    'nehrp-2020', 'nehrp-2015', 'nehrp-2009',
+    'ibc-2015', 'ibc-2012',
+    'aashto-2009',
+    ],
     )
 parser.add_argument('latitude', help='Site Latitude', type=float)
 parser.add_argument('longitude', help='Site Longitude', type=float)
 parser.add_argument(
-    'risk_category', metavar='risk_category', 
-    help='Risk Category', choices=['I', 'II', 'III', 'IV']
+    'risk_category', 
+    help='Risk Category', 
+    metavar='risk_category', 
+    choices=['I', 'II', 'III', 'IV']
     )
 parser.add_argument(
-    'site_class', metavar='site_class', help='Site Class',
-    choices=['A', 'B', 'C', 'D', 'D-default', 'E', 'F']
+    'site_class', 
+    help='Site Class',
+    metavar='site_class',
+    choices=['A', 'B', 'C', 'D', 'D-default', 'E', 'F'],
+    )
+parser.add_argument('-o', '--output', 
+    help='output format', 
+    choices=['json', 'table'],
+    default='table',
     )
 args = parser.parse_args()
 
 # Using command arguments to form into a well-formed request
-parameters = {} # for storing input parameters
+parameters = {} # for storing query parameters
 
 ROOT_URL = 'https://earthquake.usgs.gov/ws/designmaps/'
 REF_DOCUMENT = args.std
@@ -63,26 +72,23 @@ FULL_URL = ROOT_URL + REF_DOCUMENT + '.json?' + PARAMETERS_ENCODED
 
 # Carry out request...
 with urllib.request.urlopen(FULL_URL) as response:
-    ext = wt.Extractor(response)
+    if args.output == 'json':
+        print(response.read().decode('utf-8'))
+    else:
+        ext = wt.Extractor(response)
     
-in_headings = ("Input", "Values")
-user_req = ext.extract_input()
-wt.filter_out_parameters(user_req, "status", "url")
-tbl_in = wt.Table(in_headings, user_req)
-tbl_in.write_to_file("out.txt")
+        in_headings = ("Input", "Values")
+        user_req = ext.extract_input()
+        wt.filter_out_parameters(user_req, "status", "url")
+        tbl_in = wt.Table(in_headings, user_req)
+        tbl_in.write_to_file("out.txt")
 
-out_headings = ("Parameters", "Values", "Description")
-svs = ext.extract_svs()
-out_svs = wt.append_output_descriptions(svs, wt.DESCRIPTION_LABELS)
-tbl_out = wt.Table(out_headings, out_svs)
-tbl_out.write_to_file("out.txt", True)
+        out_headings = ("Parameters", "Values", "Description")
+        svs = ext.extract_svs()
+        out_svs = wt.append_output_descriptions(svs, wt.DESCRIPTION_LABELS)
+        tbl_out = wt.Table(out_headings, out_svs)
+        tbl_out.write_to_file("out.txt", True)
 
-meta_headings = ("Metadata", "Values")
-tbl_meta = wt.Table(meta_headings, ext.extract_metadata())
-tbl_meta.write_to_file("out.txt", True)
-
-# def main():
-#     pass
-
-# if __name__ == "__main__":
-#     main()
+        meta_headings = ("Metadata", "Values")
+        tbl_meta = wt.Table(meta_headings, ext.extract_metadata())
+        tbl_meta.write_to_file("out.txt", True)
