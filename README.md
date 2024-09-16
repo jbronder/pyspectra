@@ -22,3 +22,21 @@ lateral forces occurring on a structure during a design seismic event. Combining
 these accelerations with a structure's Lateral Force Resisting System (LFRS) and
 the building's own self-weight, an estimate of the design lateral force on a
 structure can be obtained.
+
+## Common CLI Examples & Usage
+By default data prints to the terminal, obtaining seismic design data from the
+ASCE 7-22 Standard at 34 Latitude, -118 Longitude, Risk Category II, and Site
+Class D:
+```bash
+$ python3 webspectra.py asce7-22 34 -118 II D
+
+# write output to out.txt file
+$ python3 webspectra.py asce7-16 34 -118 II A > out.txt
+```
+
+Obtaining seismic design data from the NEHRP-2020 documents at 34 Latitude, -118
+Longitude, Risk Category III, and Site Class B formatted to JSON and piping the
+JSON into Python's JSON validation tool:
+```bash
+$ python3 webspectra.py -o json nehrp-2020 34 -118 III B | python3 -m json.tool
+```
