@@ -1,6 +1,6 @@
 # file: wdstable.py
 # -----------------------------------------------------------------------------
-# Description: A web spectra library for outputting to the terminal. 
+# Description: A web spectra library for standard output formatting. 
 #
 # TODO
 # [ ] Update docstrings
@@ -13,6 +13,7 @@ import csv
 import json
 import io
 
+from types import SimpleNamespace
 from typing import BinaryIO, Callable
 
 # Debug modules
@@ -66,8 +67,31 @@ DESCRIPTION_LABELS = {
     'twoPeriodDesignSpectrum' : 'Two Period Horizontal Design Spectrum',
     'twoPeriodMCErSpectrum' : 'Two Period MCEr Spectrum',
     'verticalDesignSpectrum' : 'Vertical Design Spectrum',
-    'verticalMCErSpectrum' : 'Vertical MCEr Spectrum'
+    'verticalMCErSpectrum' : 'Vertical MCEr Spectrum',
+    'multiPeriodDesignSpectrum' : 'Multi-period Design Spectrum',
+    'multiPeriodMCErSpectrum' : 'Multi-period MCEr Spectrum',
     }
+
+METADATA_LABELS = {
+    'vs30' : 'Shear Wave Velocity (m/s)',
+    'modelVersion' : 'Version of USGS Hazard Model',
+    'pgadFloor' : 'Deterministic Lower Limit Peak Ground Acceleration (g)',
+    'scienceBaseURL' : 'Science Base URL',
+    'spatialInterpolationMethod': 'Interpolation Method Used',
+}
+
+def as_simple_namespace(d: dict[str, any]) -> SimpleNamespace:
+    """An object hook function to deserialize JSON.
+    
+    Parameters
+    ----------
+    d : dict[str, any]
+
+    Returns
+    -------
+    sn : SimpleNamespace
+    """
+    return SimpleNamespace(**d)
 
 def append_output_descriptions(
         data_rows: list[tuple[any,...]],
@@ -126,11 +150,9 @@ class Extractor:
     -------
     < TODO : Example Goes Here >
     """
-    def __init__(self, json_res: dict[str, any] | BinaryIO):
-        if not isinstance(json_res, dict):
-            self._json_res = self._flatten_dict(json.load(json_res))
-        else:
-            self._json_res = self._flatten_dict(json_res)
+    def __init__(self, json_res: str):
+        self.usgs_response = json.loads(json_res, object_hook=as_simple_namespace)
+        self._json_res = json.loads(json_res)
     
     def extract_svs(self) -> list[tuple[any, ...]]:
         """Generate a list of data rows where single value data from the JSON
@@ -142,11 +164,10 @@ class Extractor:
             A list of data row tuples.
         """
         svs = []
-        # filter out list objects
-        for k, v in self._json_res.items():
-            if k.find("response.data") != -1 and not isinstance(v, list):
-                k_entry = self._parse_suffix(k)
-                svs.append((k_entry, v))
+        data = dict(self.usgs_response.response.data.__dict__)
+        for k, v in data.items():
+            if not isinstance(v, (list, dict, SimpleNamespace)):
+                svs.append((k, v))
         return svs
 
     def extract_spectra(self) -> list[tuple[any, ...]]: 
@@ -156,34 +177,43 @@ class Extractor:
         -------
         spectra : list[tuple[str, ...]]
         """
-        # needs a check if this is available in the first place. It may not exist
         spectra = []
-        for k, v in self._json_res.items():
-            if k.find("Spectrum") != -1:
-                k_entry = self._parse_suffix(k)
-                spectra.append((k_entry, v))
+        data = dict(self.usgs_response.response.data.__dict__)
+        for k, v in data.items():
+            if isinstance(v, (list, dict, SimpleNamespace)):
+                spectra.append((k, v))
         return spectra
 
     def extract_input(self) -> list[tuple[any, ...]]:
         """Extract JSON client request.
+
+        Returns
+        -------
+        client_req : list[tuple[any, ...]]
         """
         client_req = []
-        for k, v in self._json_res.items():
-            if k.find("request") != -1:
-                # filter out fully-qual'd 'url' and the 'status' tags
-                if k.find("url") == -1 and k.find("status") == -1: 
-                    k_entry = self._parse_suffix(k)
-                    client_req.append((k_entry, v))
+        client_req.append(("date", self.usgs_response.request.date))
+        client_req.append(
+            ("referenceDocument", self.usgs_response.request.referenceDocument)
+            )
+        parameters = dict(self.usgs_response.request.parameters.__dict__)
+        for k, v in parameters.items():
+            client_req.append((k, v))
         return client_req
 
-    def extract_metadata(self) -> list[tuple[any, ...]]:
-        """Extract metadata from JSON response."""
-        metadata = []
-        for k, v in self._json_res.items():
-            if k.find("metadata") != -1 and not isinstance(v, list):
-                k_entry = self._parse_suffix(k)
-                metadata.append((k_entry, v))
-        return metadata 
+    def extract_metadata_svs(self) -> list[tuple[any, ...]]:
+        """Extract metadata from JSON response.
+        
+        Returns
+        -------
+        metadata : list[tuple[any, ...]]
+        """
+        metadata_svs = []
+        metadata = dict(self.usgs_response.response.metadata.__dict__)
+        for k, v in metadata.items():
+            if not isinstance(v, (list, dict, SimpleNamespace)):
+                metadata_svs.append((k, v))
+        return metadata_svs
 
     def _flatten_dict(self, kv_map: dict[str, any]) -> dict[str, any]:
         """Resolve nested dicts into a single level dict.
@@ -224,7 +254,7 @@ class Extractor:
             flattening process
         
         parent_key : str
-            a string or ancestor keys separated by '.'
+            a string of ancestor keys separated by '.'
         """
         for k, v in kv_map.items():
             if len(parent_key) != 0:
