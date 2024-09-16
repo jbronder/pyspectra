@@ -12,7 +12,7 @@ import urllib.parse
 import urllib.request
 
 # Web Spectra Specific Modules
-import wdstable as wt
+from wdstable import DESCRIPTION_LABELS, METADATA_LABELS, Extractor, Table, append_output_descriptions, filter_out_parameters
 
 def _output_user_request(input_parameters: dict):
     print("User Input:")
@@ -72,23 +72,25 @@ FULL_URL = ROOT_URL + REF_DOCUMENT + '.json?' + PARAMETERS_ENCODED
 
 # Carry out request...
 with urllib.request.urlopen(FULL_URL) as response:
+    response_string = response.read().decode('utf-8')
     if args.output == 'json':
-        print(response.read().decode('utf-8'))
+        print(response_string)
     else:
-        ext = wt.Extractor(response)
+        ext = Extractor(response_string)
     
         in_headings = ("Input", "Values")
         user_req = ext.extract_input()
-        wt.filter_out_parameters(user_req, "status", "url")
-        tbl_in = wt.Table(in_headings, user_req)
+        tbl_in = Table(in_headings, user_req)
         tbl_in.write_to_file("out.txt")
 
         out_headings = ("Parameters", "Values", "Description")
         svs = ext.extract_svs()
-        out_svs = wt.append_output_descriptions(svs, wt.DESCRIPTION_LABELS)
-        tbl_out = wt.Table(out_headings, out_svs)
+        out_svs = append_output_descriptions(svs, DESCRIPTION_LABELS)
+        tbl_out = Table(out_headings, out_svs)
         tbl_out.write_to_file("out.txt", True)
 
-        meta_headings = ("Metadata", "Values")
-        tbl_meta = wt.Table(meta_headings, ext.extract_metadata())
+        meta_headings = ("Metadata", "Values", "Description")
+        metadata_svs = ext.extract_metadata_svs()
+        out_metadata_svs = append_output_descriptions(metadata_svs, METADATA_LABELS)
+        tbl_meta = Table(meta_headings, out_metadata_svs)
         tbl_meta.write_to_file("out.txt", True)
