@@ -3,22 +3,14 @@
 # Description: A web spectra library for standard output formatting. 
 #
 # TODO
-# [ ] Update docstrings
 # [ ] Test configurations (import unittest)
-# [ ] Output spectras in toml, csv, json, xml formats
+# [ ] Output only spectra to json format
 # [ ] Requests are placed in to a localized SQL database for retrival.
 # -----------------------------------------------------------------------------
 
-import csv
 import json
-import io
 
 from types import SimpleNamespace
-from typing import BinaryIO, Callable
-
-# Debug modules
-import pdb
-import pprint
 
 REQUEST_LABELS = {
     'date' : 'Date', 
@@ -44,7 +36,7 @@ DESCRIPTION_LABELS = {
     'pgam' : 'Site Mod. PGA',
     'ssrt' : 'Probabilistic Risk Targeted SS',
     'crs' : 'Coefficent of Risk (0.2s)',
-    'ssuh' : 'Factored UH SS',
+    'ssuh' : 'Factored Uniform Hazard SS',
     'ssd' : 'Factored Det. SS',
     'ss' : 'Short Spectra (SS) MCEr',
     'fa' : 'Short Spectra Fa Factor',
@@ -75,9 +67,12 @@ DESCRIPTION_LABELS = {
 METADATA_LABELS = {
     'vs30' : 'Shear Wave Velocity (m/s)',
     'modelVersion' : 'Version of USGS Hazard Model',
-    'pgadFloor' : 'Deterministic Lower Limit Peak Ground Acceleration (g)',
+    'pgadPercentileFactor' : "Factor To Acheive Target Ground Motion (PGA)",
+    'pgadFloor' : 'Det. Lower Limit Peak Ground Accel. (g)',
     'scienceBaseURL' : 'Science Base URL',
     'spatialInterpolationMethod': 'Interpolation Method Used',
+    'maxDirFactors' : 'Max Direction Response Scale Factors',
+    'dllSpectrum' : 'Deterministic Lower Limit Response Spectrum',
 }
 
 def as_simple_namespace(d: dict[str, any]) -> SimpleNamespace:
@@ -152,7 +147,6 @@ class Extractor:
     """
     def __init__(self, json_res: str):
         self.usgs_response = json.loads(json_res, object_hook=as_simple_namespace)
-        self._json_res = json.loads(json_res)
     
     def extract_svs(self) -> list[tuple[any, ...]]:
         """Generate a list of data rows where single value data from the JSON
@@ -175,7 +169,7 @@ class Extractor:
 
         Returns
         -------
-        spectra : list[tuple[str, ...]]
+        spectra : list[tuple[any, ...]]
         """
         spectra = []
         data = dict(self.usgs_response.response.data.__dict__)
