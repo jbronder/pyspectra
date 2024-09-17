@@ -3,14 +3,14 @@ A command line application written for a terminal-savvy structural engineer.
 
 
 ## Tools and Technologies
-- [Python Standard Libraries](https://python.org)
+- [Python Standard Libraries](https://docs.python.org/3/library/index.html)
 
 
 ## About
 This application is a CLI alternative to the [browser-based
 application](https://ascehazardtool.org/) for retrieving seismic design and
 analysis information. The motivation behind building it was picking up more CLI
-development in Python with the `argparse` library.
+development experience in Python with the `argparse` library.
 
 
 ## A Brief (the briefest) Background on Seismic Design & Analysis
@@ -23,15 +23,18 @@ these accelerations with a structure's Lateral Force Resisting System (LFRS) and
 the building's own self-weight, an estimate of the design lateral force on a
 structure can be obtained.
 
+
 ## Common CLI Examples & Usage
-By default data prints to the terminal, obtaining seismic design data from the
-ASCE 7-22 Standard at 34 Latitude, -118 Longitude, Risk Category II, and Site
-Class D:
+By default, data prints to the terminal and like any CLI application, can also
+be redirected to a file.
+
+Obtaining seismic design data from the ASCE 7-22 Standard at 34 Latitude, -118
+Longitude, Risk Category II, and Site Class D:
 ```bash
 $ python3 webspectra.py asce7-22 34 -118 II D
 
-# write output to out.txt file
-$ python3 webspectra.py asce7-16 34 -118 II A > out.txt
+# writing output to a file: out.txt
+$ python3 webspectra.py asce7-22 34 -118 II D > out.txt
 ```
 
 Obtaining seismic design data from the NEHRP-2020 documents at 34 Latitude, -118
