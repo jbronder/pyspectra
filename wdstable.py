@@ -1,8 +1,12 @@
 # file: wdstable.py
 # -----------------------------------------------------------------------------
 # Description: A web spectra library for standard output tabulation and
-# formatting. 
+# formatting.
 # -----------------------------------------------------------------------------
+
+""" A support module for extracting and tabulating JSON formatted data from a USGS server
+response.
+"""
 
 import json
 
@@ -144,24 +148,24 @@ class Extractor:
     def __init__(self, json_res: str):
         self.usgs_response = json.loads(json_res, object_hook=_as_simple_namespace)
         self.json_res = json.loads(json_res)
-    
+
     def extract_svs(self) -> list[tuple[any, ...]]:
         """Generate a list of data rows where single value data from the JSON
         response.
 
         Returns
         -------
-        svs : list[tuple[any, ...]]
+        sv : list[tuple[any, ...]]
             A list of data row tuples.
         """
-        svs = []
+        sv = []
         data = dict(self.usgs_response.response.data.__dict__)
         for k, v in data.items():
             if not isinstance(v, (list, dict, SimpleNamespace)):
-                svs.append((k, v))
-        return svs
+                sv.append((k, v))
+        return sv
 
-    def extract_spectra(self) -> list[tuple[any, ...]]: 
+    def extract_spectra(self) -> list[tuple[any, ...]]:
         """Extract response JSON data for spectrum series data.
 
         Returns
@@ -238,9 +242,9 @@ class Extractor:
 
     def _flatten_dict_helper(
             self,
-            kv_map: dict[str, any], 
+            kv_map: dict[str, any],
             kv_list: list[tuple[str, any]],
-            parent_key: str = "" 
+            parent_key: str = ""
             ):
         """ Recursively traverses through a nested dictionary (where values are
         themselves dictionaries) and converts key-value pairs into list where
@@ -276,7 +280,7 @@ class Extractor:
         return key_str[r_index+1:]
 
 
-class Table: 
+class Table:
     """Generating a table for printing out to a console or to be written to an 
     external file.
 
@@ -295,8 +299,8 @@ class Table:
         a list of tupled data rows
     """
     def __init__(
-        self, 
-        headings: tuple[str, ...], 
+        self,
+        headings: tuple[str, ...],
         data_rows: list[tuple[str, ...]]
         ):
         # headings and data_row tuple match check
@@ -311,7 +315,7 @@ class Table:
         """Prepare a table to be viewed onto the terminal."""
         out_table = self._make_table()
         print('\n'.join(out_table))
-    
+
     def write_to_file(self, f_name: str, append: bool = False):
         """Render a table to be written to a file or appended to an existing
         file.
@@ -349,34 +353,33 @@ class Table:
         str_list.append("| ")
         for i, data in enumerate(self._data[row_dex]):
             str_list.append(str(data).ljust(col_widths[i]))
-            str_list.append(" | ") 
+            str_list.append(" | ")
         out_str = "".join(str_list)
         out_str = out_str.strip()
         return out_str
 
     def _add_borders(self, tbl_str: list[str]):
-        border_len = len(tbl_str[0]) 
+        border_len = len(tbl_str[0])
         border = border_len * '-'
         tbl_str.insert(0, border)
         tbl_str.insert(2, border)
         tbl_str.insert(len(tbl_str), border)
 
     def _make_table(self) -> list[str]:
-        tbl_strs = [] 
+        tbl_strs = []
         col_widths = self._get_column_widths()
         for index, _ in enumerate(self._data):
             row_str = self._format_row(index, col_widths)
             tbl_strs.append(row_str)
         self._add_borders(tbl_strs)
         return tbl_strs
-    
+
 if __name__ == '__main__':
     # the code below is intended to test with a local file if an internet
     # connection cannot be found
     with open("response.json", mode='rb') as fr:
         ext = Extractor(fr)
-        # New Psuedo-testing of Classes
-    
+    # New Psuedo-testing of Classes
     in_headings = ("Input", "Values")
     user_req = ext.extract_input()
     filter_out_parameters(user_req, "status", "url")
@@ -390,6 +393,5 @@ if __name__ == '__main__':
     tbl_out.write_to_file("out.txt", True)
 
     meta_headings = ("Metadata", "Values")
-    tbl_meta = Table(meta_headings, ext.extract_metadata())
+    tbl_meta = Table(meta_headings, ext.extract_metadata_svs())
     tbl_meta.write_to_file("out.txt", True)
-
