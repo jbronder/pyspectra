@@ -1,11 +1,7 @@
 # file: wdstable.py
 # -----------------------------------------------------------------------------
-# Description: A web spectra library for standard output formatting. 
-#
-# TODO
-# [ ] Test configurations (import unittest)
-# [ ] Output only spectra to json format
-# [ ] Requests are placed in to a localized SQL database for retrival.
+# Description: A web spectra library for standard output tabulation and
+# formatting. 
 # -----------------------------------------------------------------------------
 
 import json
@@ -75,7 +71,7 @@ METADATA_LABELS = {
     'dllSpectrum' : 'Deterministic Lower Limit Response Spectrum',
 }
 
-def as_simple_namespace(d: dict[str, any]) -> SimpleNamespace:
+def _as_simple_namespace(d: dict[str, any]) -> SimpleNamespace:
     """An object hook function to deserialize JSON.
     
     Parameters
@@ -146,7 +142,8 @@ class Extractor:
     < TODO : Example Goes Here >
     """
     def __init__(self, json_res: str):
-        self.usgs_response = json.loads(json_res, object_hook=as_simple_namespace)
+        self.usgs_response = json.loads(json_res, object_hook=_as_simple_namespace)
+        self.json_res = json.loads(json_res)
     
     def extract_svs(self) -> list[tuple[any, ...]]:
         """Generate a list of data rows where single value data from the JSON
@@ -165,7 +162,7 @@ class Extractor:
         return svs
 
     def extract_spectra(self) -> list[tuple[any, ...]]: 
-        """Extract response JSON data for the Design and or MCE Spectra.
+        """Extract response JSON data for spectrum series data.
 
         Returns
         -------
@@ -173,9 +170,21 @@ class Extractor:
         """
         spectra = []
         data = dict(self.usgs_response.response.data.__dict__)
-        for k, v in data.items():
-            if isinstance(v, (list, dict, SimpleNamespace)):
-                spectra.append((k, v))
+        underlying_data: dict[str, any] = {}
+        if 'underlyingData' in data:
+            underlying_data = dict(self.usgs_response.response.data.underlyingData.__dict__)
+
+        if underlying_data:
+            for k, v in underlying_data.items():
+                if isinstance(v, (list, dict, SimpleNamespace)):
+                    spectra.append((k, v))
+            for k, v in data.items():
+                if isinstance(v, (list, dict, SimpleNamespace)) and k != 'underlyingData':
+                    spectra.append((k, v))
+        else:
+            for k, v in data.items():
+                if isinstance(v, (list, dict, SimpleNamespace)):
+                    spectra.append((k, v))
         return spectra
 
     def extract_input(self) -> list[tuple[any, ...]]:
