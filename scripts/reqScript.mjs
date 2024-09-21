@@ -4,13 +4,14 @@
  * @author jbronder
  */
 
-import { writeFile } from 'node:fs/promises';
-import { argv, exit } from 'node:process';
-import { URL } from 'node:url';
+import {writeFile} from 'node:fs/promises';
+import {argv, exit} from 'node:process';
+import {URL} from 'node:url';
 
 if (argv.length < 7) {
   console.error(`Not enough args.`);
-  console.log(`USAGE: node reqScript <standard> <latitude> <longitude> <riskCategory> <siteClass>`);
+  console.log(
+      `USAGE: node reqScript <standard> <latitude> <longitude> <riskCategory> <siteClass>`);
   exit(1);
 }
 
@@ -28,7 +29,6 @@ params.set('riskCategory', argv[5]);
 params.set('siteClass', argv[6]);
 params.set('title', 'Example');
 
-
 let query = new URLSearchParams(params);
 console.log(query.toString());
 url.search = query;
@@ -41,4 +41,3 @@ try {
 } catch (err) {
   console.error(err);
 }
-
