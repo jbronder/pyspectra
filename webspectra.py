@@ -6,6 +6,8 @@
 # spectra from the USGS web service.
 #------------------------------------------------------------------------------
 
+""" The main file running the CLI."""
+
 import argparse
 import csv
 import json
@@ -44,7 +46,7 @@ def unzip_and_collect(
     ordinates = []
     for points in spectrum[1]:
         periods.append(points[0])
-        ordinates.append(points[1]) 
+        ordinates.append(points[1])
     return (periods, ordinates)
 
 def spectrum_to_json(spectrum: list[list[float]] | SimpleNamespace) -> str:
@@ -70,9 +72,15 @@ def spectrum_to_json(spectrum: list[list[float]] | SimpleNamespace) -> str:
     return json.dumps(result)
 
 def spectrum_to_csv_to_stdout(spectrum: list[list[float]] | SimpleNamespace):
+    """Converts a spectrum to output to CSV to the terminal.
+
+    Parameters
+    ----------
+    spectrum : list[list[float]] | SimpleNamespace
+    """
     csv_stdout = csv.writer(sys.stdout)
-    if isinstance(spectrum[1], SimpleNamespace): 
-        for i in range(len(spectrum[1].periods)):
+    if isinstance(spectrum[1], SimpleNamespace):
+        for i, _ in enumerate(spectrum[1].periods):
             csv_stdout.writerow([spectrum[1].periods[i], spectrum[1].ordinates[i]])
     else:
         points = unzip_and_collect(spectrum)
@@ -88,17 +96,17 @@ def make_request(args: dict[str, any]):
     try:
         parameters = {} # for storing query parameters
         # carry out request
-        ROOT_URL = 'https://earthquake.usgs.gov/ws/designmaps/'
-        REF_DOCUMENT = args.std
+        root_url = 'https://earthquake.usgs.gov/ws/designmaps/'
+        ref_document = args.std
         parameters['latitude'] = args.latitude
         parameters['longitude'] = args.longitude
         parameters['riskCategory'] = args.risk_category
         parameters['siteClass'] = args.site_class
         parameters['title'] = 'Example'
 
-        PARAMETERS_ENCODED = urllib.parse.urlencode(parameters)
-        FULL_URL = ROOT_URL + REF_DOCUMENT + '.json?' + PARAMETERS_ENCODED
-        with urllib.request.urlopen(FULL_URL) as response:
+        params_encoded = urllib.parse.urlencode(parameters)
+        full_url = root_url + ref_document + '.json?' + params_encoded
+        with urllib.request.urlopen(full_url) as response:
             response_string = response.read().decode('utf-8')
 
             # outputs only spectrum data
@@ -124,7 +132,7 @@ def make_request(args: dict[str, any]):
                             if args.output == 'json':
                                 print(spectrum_to_json(spectrum))
                             else:
-                                spectrum_to_csv_to_stdout(spectrum) 
+                                spectrum_to_csv_to_stdout(spectrum)
 
             # outputs everything but spectrum data
             else:
@@ -132,7 +140,7 @@ def make_request(args: dict[str, any]):
                     print(response_string)
                 else:
                     ext = Extractor(response_string)
-                
+
                     in_headings = ("Input", "Values")
                     user_req = ext.extract_input()
                     tbl_in = Table(in_headings, user_req)
@@ -352,8 +360,8 @@ aashto2009_parser.add_argument(**risk_category_arg_template)
 aashto2009_parser.add_argument(**site_class_arg_template_one)
 aashto2009_parser.set_defaults(std='aashto-2009', fn=make_request)
 
-parser.add_argument('-o', '--output', 
-    help='output format', 
+parser.add_argument('-o', '--output',
+    help='output format',
     choices=['json', 'table'],
     default='table',
     )
