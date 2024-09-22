@@ -192,21 +192,21 @@ site_class_arg_template_one = {
     "help": "Site Class: ['A', 'B', 'C', 'D', 'E']",
     "metavar": "site_class",
     "choices": ['A', 'B', 'C', 'D', 'E']
-}
+    }
 
 site_class_arg_template_two = {
     "dest": "site_class",
     "help": "Site Class: ['A', 'B', 'B-estimated', 'C', 'D', 'D-default','E']",
     "metavar": "site_class",
     "choices": ['A', 'B', 'B-estimated', 'C', 'D', 'D-default','E']
-}
+    }
 
 site_class_arg_template_three = {
     "dest": "site_class",
     "help": "Site Class: ['A', 'B', 'BC', 'C', 'CD', 'D', 'DE','E', 'default']",
     "metavar": "site_class",
     "choices": ['A', 'B', 'BC', 'C', 'CD', 'D', 'DE','E', 'default']
-}
+    }
 
 subparsers = parser.add_subparsers(help='available design standards')
 
@@ -248,7 +248,7 @@ asce716_parser.add_argument(
     choices=['two-design', 'two-mcer'
              'vert-design', 'vert-mcer',
              ],
-)
+    )
 asce716_parser.set_defaults(std='asce7-16', fn=make_request)
 
 # asce7-10 subcommand
@@ -296,6 +296,15 @@ nehrp2020_parser.add_argument(**latitude_arg_template)
 nehrp2020_parser.add_argument(**longitude_arg_template)
 nehrp2020_parser.add_argument(**risk_category_arg_template)
 nehrp2020_parser.add_argument(**site_class_arg_template_three)
+nehrp2020_parser.add_argument(
+        '-s', '--spectrum',
+        help='request spectrum only',
+        choices=['two-design', 'two-mcer',
+                 'vert-design', 'vert-mcer',
+                 'multi-design', 'multi-mcer',
+                 'risk-targeted', '84th',
+                 ]
+        )
 nehrp2020_parser.set_defaults(std='nehrp-2020', fn=make_request)
 
 # nehrp-2015 subcommand
@@ -308,6 +317,13 @@ nehrp2015_parser.add_argument(**latitude_arg_template)
 nehrp2015_parser.add_argument(**longitude_arg_template)
 nehrp2015_parser.add_argument(**risk_category_arg_template)
 nehrp2015_parser.add_argument(**site_class_arg_template_two)
+nehrp2015_parser.add_argument(
+        '-s', '--spectrum',
+        help='request spectrum only',
+        choices=['two-design', 'two-mcer',
+                 'vert-design', 'vert-mcer',
+                 ]
+        )
 nehrp2015_parser.set_defaults(std='nehrp-2015', fn=make_request)
 
 # nehrp-2009 subcommand
@@ -320,6 +336,11 @@ nehrp2009_parser.add_argument(**latitude_arg_template)
 nehrp2009_parser.add_argument(**longitude_arg_template)
 nehrp2009_parser.add_argument(**risk_category_arg_template)
 nehrp2009_parser.add_argument(**site_class_arg_template_one)
+nehrp2009_parser.add_argument(
+        '-s', '--spectrum',
+        help='request spectrum only',
+        choices=['two-design', 'two-mcer'],
+        )
 nehrp2009_parser.set_defaults(std='nehrp-2009', fn=make_request)
 
 # ibc-2015 subcommand
@@ -333,19 +354,29 @@ ibc2015_parser.add_argument(**latitude_arg_template)
 ibc2015_parser.add_argument(**longitude_arg_template)
 ibc2015_parser.add_argument(**risk_category_arg_template)
 ibc2015_parser.add_argument(**site_class_arg_template_one)
+ibc2015_parser.add_argument(
+        '-s', '--spectrum',
+        help='request spectrum only',
+        choices=['two-design', 'two-mcer']
+        )
 ibc2015_parser.set_defaults(std='ibc-2015', fn=make_request)
 
-# ibc-2009 subcommand
-ibc2009_parser = subparsers.add_parser(
-    'ibc-2009',
+# ibc-2012 subcommand
+ibc2012_parser = subparsers.add_parser(
+    'ibc-2012',
     description='Seismic design data from IBC 2009 code.',
-    help='IBC 2009 help',
+    help='IBC 2012 help',
     )
-ibc2009_parser.add_argument(**latitude_arg_template)
-ibc2009_parser.add_argument(**longitude_arg_template)
-ibc2009_parser.add_argument(**risk_category_arg_template)
-ibc2009_parser.add_argument(**site_class_arg_template_one)
-ibc2009_parser.set_defaults(std='ibc-2009', fn=make_request)
+ibc2012_parser.add_argument(**latitude_arg_template)
+ibc2012_parser.add_argument(**longitude_arg_template)
+ibc2012_parser.add_argument(**risk_category_arg_template)
+ibc2012_parser.add_argument(**site_class_arg_template_one)
+ibc2012_parser.add_argument(
+        '-s', '--spectrum',
+        help='request spectrum only',
+        choices=['two-design','two-mcer']
+        )
+ibc2012_parser.set_defaults(std='ibc-2012', fn=make_request)
 
 # aashto-2009 subcommand
 aashto2009_parser = subparsers.add_parser(
@@ -358,6 +389,11 @@ aashto2009_parser.add_argument(**latitude_arg_template)
 aashto2009_parser.add_argument(**longitude_arg_template)
 aashto2009_parser.add_argument(**risk_category_arg_template)
 aashto2009_parser.add_argument(**site_class_arg_template_one)
+aashto2009_parser.add_argument(
+        '-s', '--spectrum',
+        help='request spectrum only',
+        choices=['two-design'],
+        )
 aashto2009_parser.set_defaults(std='aashto-2009', fn=make_request)
 
 parser.add_argument('-o', '--output',
