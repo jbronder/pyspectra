@@ -24,7 +24,7 @@ try {
 
 /**
  * Produces a list of files that contain "...response.json" files in the current
- * working directory.
+ * working directory
  * @async
  * @returns {Promise<string[]>}
  */
@@ -45,7 +45,8 @@ async function extractJsonFiles() {
 }
 
 /**
- * Generates a set of common keys and their nested object trees
+ * Generates an object who's structure contains the set of common properties and
+ * their nested object trees
  * @async
  * @param {string[]}
  * @returns {Promise<Object>}
@@ -81,7 +82,8 @@ async function findIntersectingKeys(jsonFiles) {
 }
 
 /**
- *
+ * Generates an object who's structure contains the set of all possible
+ * properties and their nested object trees
  * @async
  * @param {string[]}
  * @return {Promise<Object>}
@@ -119,9 +121,10 @@ async function findUnionKeys(jsonFiles) {
 /**
  * Produce an object tree of all properties and their nested object trees. The
  * function also sets null to properties that contain primitives and Array
- * values.
- * @param {Object} o - parsed JSON, essential object
- * @return {Object} -
+ * values
+ * @param {Object} o - parsed JSON into an object; essentially an object
+ * @return {Object} - the resultant object tree containing possble nested
+ * objects and primitives and Array values nulled out.
  */
 function enumerateKeyTree(o) {
   const keyTree = {};
@@ -130,7 +133,7 @@ function enumerateKeyTree(o) {
 }
 
 /**
- * Helper function that populates a plain JS object with keys.
+ * Helper function that populates a plain JS object with keys
  * @param {Object} o
  * @param {Object} tree
  */
@@ -146,9 +149,8 @@ function enumerateKeyTreeHelper(o, tree) {
   }
 }
 
-
 /**
- * Returns an object tree containing the intersection of keys in an object tree.
+ * Returns an object tree containing the intersection of keys in an object tree
  * @param {Object} first
  * @param {Object} second
  * @return {Object}
