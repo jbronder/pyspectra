@@ -67,12 +67,13 @@ DESCRIPTION_LABELS = {
 METADATA_LABELS = {
     'vs30' : 'Shear Wave Velocity (m/s)',
     'modelVersion' : 'Version of USGS Hazard Model',
-    'pgadPercentileFactor' : "Factor To Acheive Target Ground Motion (PGA)",
+    'pgadPercentileFactor' : "Applied Factor To Achieve Target Motion (PGA)",
     'pgadFloor' : 'Det. Lower Limit Peak Ground Accel. (g)',
     'scienceBaseURL' : 'Science Base URL',
     'spatialInterpolationMethod': 'Interpolation Method Used',
     'maxDirFactors' : 'Max Direction Response Scale Factors',
     'dllSpectrum' : 'Deterministic Lower Limit Response Spectrum',
+    'griddedValuesID': 'Region Specific Underlying Id',
 }
 
 def _as_simple_namespace(d: dict[str, any]) -> SimpleNamespace:
@@ -81,10 +82,13 @@ def _as_simple_namespace(d: dict[str, any]) -> SimpleNamespace:
     Parameters
     ----------
     d : dict[str, any]
+        An expression of a JSON object converted to a dict object.
 
     Returns
     -------
     sn : SimpleNamespace
+        An object assigning that converts key-values into
+        attribute-primitive pairs.
     """
     return SimpleNamespace(**d)
 
