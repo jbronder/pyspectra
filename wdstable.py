@@ -147,7 +147,12 @@ class Extractor:
     
     Example
     -------
-    < TODO : Example Goes Here >
+    # create a extractor object
+    ext = Extractor(json_response)
+
+    # extract all single value parameter data which is a tuple of size 2:
+    # (<label>, <single_value_data>)
+    single_values = ext.extract_svs()
     """
     def __init__(self, json_res: str):
         self.usgs_response = json.loads(json_res, object_hook=_as_simple_namespace)
@@ -175,6 +180,8 @@ class Extractor:
         Returns
         -------
         spectra : list[tuple[any, ...]]
+            a list of tuples of the available spectra series data under the
+            response.data properties including the underlyingData property
         """
         spectra = []
         data = dict(self.usgs_response.response.data.__dict__)
@@ -205,19 +212,18 @@ class Extractor:
         client_req = []
         client_req.append(("date", self.usgs_response.request.date))
         client_req.append(
-            ("referenceDocument", self.usgs_response.request.referenceDocument)
-            )
+            ("referenceDocument", self.usgs_response.request.referenceDocument))
         parameters = dict(self.usgs_response.request.parameters.__dict__)
         for k, v in parameters.items():
             client_req.append((k, v))
         return client_req
 
     def extract_metadata_svs(self) -> list[tuple[any, ...]]:
-        """Extract metadata from JSON response.
+        """Extract metadata single value primitives from the JSON response.
         
         Returns
         -------
-        metadata : list[tuple[any, ...]]
+        metadata_svs : list[tuple[any, ...]]
         """
         metadata_svs = []
         metadata = dict(self.usgs_response.response.metadata.__dict__)
@@ -232,7 +238,8 @@ class Extractor:
         Parameters
         ----------
         kv_map : dict[str, any]
-            a dict with other nested dicts
+            a dict with other nested dicts representing the JSON response
+            converted into a Python dict
 
         Returns
         -------
@@ -292,7 +299,12 @@ class Table:
     Example
     -------
 
-    < TODO Add example here. >
+    # instantiate a Table object with a tuple of headings and the tuple of
+    # data values expressed as a list of tuples.
+    table = Table(heading_tuple, data_tuple_list)
+
+    # print the table to the terminal
+    table.render()
 
     Parameters
     ----------

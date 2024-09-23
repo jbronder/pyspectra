@@ -48,7 +48,8 @@ async function extractJsonFiles() {
  * Generates an object who's structure contains the set of common properties and
  * their nested object trees
  * @async
- * @param {string[]}
+ * @param {string[]} jsonFiles - a list of file names that are JSON response
+ * files from USGS
  * @returns {Promise<Object>}
  */
 async function findIntersectingKeys(jsonFiles) {
@@ -85,7 +86,8 @@ async function findIntersectingKeys(jsonFiles) {
  * Generates an object who's structure contains the set of all possible
  * properties and their nested object trees
  * @async
- * @param {string[]}
+ * @param {string[]} jsonFiles - a list of JSON files that are JSON response
+ * files from USGS
  * @return {Promise<Object>}
  */
 async function findUnionKeys(jsonFiles) {
@@ -134,8 +136,8 @@ function enumerateKeyTree(o) {
 
 /**
  * Helper function that populates a plain JS object with keys
- * @param {Object} o
- * @param {Object} tree
+ * @param {Object} o - input JS object that may contain nested JS object
+ * @param {Object} tree - a JS object that contains the resultant object tree
  */
 function enumerateKeyTreeHelper(o, tree) {
   for (const [key, val] of Object.entries(o)) {
@@ -186,7 +188,7 @@ function intersectKeysHelper(first, second, resultantTree) {
 
 /**
  * Returns a object tree containing a union of all keys between the 'first' and
- * 'second' key trees.
+ * 'second' key trees
  * @param {Object} first - first key tree
  * @param {Object} second - second key tree
  */
@@ -221,7 +223,7 @@ function unionKeysHelper(first, second, resultantTree) {
 
 /**
  * Checks if a value of a JSON property is an 'object'
- * @param {Object}
+ * @param {Object} o - a plain JS object
  * @return {boolean}
  */
 function isObject(o) {
