@@ -403,4 +403,7 @@ parser.add_argument('-o', '--output',
     )
 
 args = parser.parse_args()
-args.fn(args)
+if len(sys.argv) == 1:
+    parser.print_help()
+else:
+    args.fn(args)
